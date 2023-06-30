@@ -9,8 +9,8 @@ using namespace std;
 
 struct Pos
 {
-	int32 x = 0;
 	int32 y = 0;
+	int32 x = 0;
 
 	bool operator==(Pos& other)
 	{
