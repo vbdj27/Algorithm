@@ -4,213 +4,56 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <stack>
 
 using namespace std;
 
-template <typename T>
-class Node
+
+template <typename T, typename Container = vector<T>>
+class Stack
 {
 public:
-	Node() : _prev(nullptr), _next(nullptr), _data(T())
+	void push(const T& value)
 	{
-
+		_container.push_back(value);
 	}
 
-	Node(const T& value) : _prev(nullptr), _next(nullptr), _data(value)
+	void pop()
 	{
-
+		_container.pop_back();
 	}
 
-public:
-	Node* _prev;
-	Node* _next;
-	T _data;
-};
-
-template <typename T>
-class Iterator
-{
-public:
-	Iterator() : _node(nullptr)
+	T& top()
 	{
-
+		return _container.back();
 	}
 
-	Iterator(Node<T>* node) : _node(node)
-	{
-
-	}
-
-	//++It
-	Iterator& operator++()
-	{
-		_node = _node->_next;
-		return *this;
-	}
-
-	//It++
-	Iterator& operator++(int)
-	{
-		Iterator<T> temp = *this;
-		_node = _node->_next;
-		return temp;
-	}
-
-	//--It
-	Iterator& operator--()
-	{
-		_node = _node->_next;
-		return *this;
-	}
-
-	//It--
-	Iterator operator--(int)
-	{
-		Iterator<T> temp = *this;
-		_node = _node->_prev;
-		return temp;
-	}
-
-	//*It
-	T& operator*()
-	{
-		return _node->_data;
-	}
-
-	bool operator==(const Iterator& otehr)
-	{
-		return _node == other._node;
-	}
-
-	bool operator!=(const Iterator& otehr)
-	{
-		return _node != other._node;
-	}
-
-public:
-	Node<T>* _node;
-};
-
-template<typename T>
-class List
-{
-public:
-	List() : _size(0)
-	{
-		// [head] <-> ... <-> [tail]
-		_head = new Node<T> ();
-		_tail = new Node<T> ();
-		_head->_next = _tail;
-		_tail->_prev = _head;
-	}
-
-	~List()
-	{
-		while(_size > 0)
-			pop_back();
-
-		delete _head;
-		delete _tail;
-	}
-
-	void push_back(const T& value)
-	{
-		AddNode(_tail, value);
-	}
-
-	void pop_back()
-	{
-		RemoveNode(_tail->_prev);
-	}
+	bool empty() { return _container.empty(); }
+	int size(){ return _container.size(); }
 
 private:
-
-	//[head] <-> [1] <-> [prevNode] <-> [before] <-> [tail]
-	//[head] <-> [1] <-> [prevNode] <-> [newNode] <-> [before] <-> [tail]
-	Node<T>* AddNode(Node<T>* before, const T& value)
-	{
-		Node<T>* newNode = new Node<T>(value);
-		Node<T>* prevNode = before->_prev;
-
-		prevNode->_next = newNode;
-		newNode->_prev = prevNode;
-
-		newNode->_next = before;
-		before->_prev = newNode;
-
-		_size++;
-
-		return newNode;
-	}
-
-	//[head] <-> [prevNode] <-> [node] <-> [nextNode] <-> [tail]
-	//[head] <-> [prevNode] <-> [nextNode] <-> [tail]
-	Node<T>* RemoveNode(Node<T>* node)
-	{
-		Node<T>* prevNode = node->_prev;
-		Node<T>* nextNode = node->_next;
-
-		prevNode->_next = nextNode;
-		nextNode->_prev = prevNode;
-
-		delete node;
-
-		_size--;
-
-		return nextNode;
-	}
-
-	int size() { return _size; }
-
-public:
-	using iterator = Iterator <T>;
-
-	iterator begin() {return iterator (_head-> _next); }
-	iterator end() {return iterator (_tail); }
-
-	// it 앞에 추가
-	iterator insert(iterator it, const T& value)
-	{
-		Node<T>* node = AddNode(it._node, value);
-		return iterator(node);
-	}
-
-	iterator erase(iterator it)
-	{
-		Node<T>* node = RemoveNode(it._node);
-		return iterator(node);
-	}
-
-private:
-	Node<T>* _head;
-	Node<T>* _tail;
-	int _size;
+	vector<T> _container;
 };
-
 
 int main()
 {
-	list <int> li;
-	list <int>::iterator eraselt;
+	Stack<int, list<int>> s;
 
-	for (int i = 0; i < 10; i++)
-	{
-		if (i == 5)
-		{
-			eraselt = li.insert(li.end(), i);
-		}
-		else
-		{
-			li.push_back(i);
-		}
+	//삽입
+	s.push(1);
+	s.push(2);
+	s.push(3);
+
+	//최상위 원소
+	while(s.empty() == false)
+	{ 
+		int data = s.top();
+
+		//최상위 원소 삭제
+		s.pop();
 	}
 
-	li.pop_back();
-	li.erase(eraselt);
+	int size = s.size();
 
-	for (list<int>::iterator it = li.begin(); it != li.end(); it++)
-	{
-		cout << (*it) << endl;
-	}
 }
 
