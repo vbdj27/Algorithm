@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Player.h"
 #include "Board.h"
+#include <stack>
 
 void Player::Init(Board* board)
 {
@@ -48,24 +49,40 @@ void Player::Init(Board* board)
 			// 왼쪽 방향으로 90도 회전.
 			_dir = (_dir + 1) % DIR_COUNT;
 
-		/*	switch (_dir)
-			{
-			case dir_up:
-				_dir = dir_left;
-				break;
-			case dir_left:
-				_dir = dir_down;
-				break;
-			case dir_down:
-				_dir = dir_right;
-				break;
-			case dir_right:
-				_dir = dir_up;
-				break;
-			}*/
 		}
 	}
-}
+
+	stack<Pos> s;
+
+	for (int i = 0; i < _path.size() - 1; i++)
+	{
+		if (s.empty() == false && s.top() == _path[i + 1])
+		{
+			s.pop();
+		}
+		else
+		{
+			s.push(_path[i]);
+		}
+	}
+
+	//목적지 도착
+	if (_path.empty() == false)
+	{
+		s.push(_path.back());
+	}
+
+	vector<Pos> path;
+	while (s.empty() == false)
+	{
+		path.push_back(s.top());
+		s.pop();
+	}
+
+	std::reverse(path.begin(), path.end());
+
+	_path = path;
+} 
 void Player::Update(uint64 deltaTick)
 {
 	if (_pathIndex >= _path.size())
