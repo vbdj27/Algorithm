@@ -16,24 +16,24 @@ struct Vertex
 
 vector<Vertex> vertices;
 vector<vector<int>> adjacent;
-vector<bool> visited;
+vector<bool> discovered;
 
 void CreateGraph()
 {
 	vertices.resize(6);
-	/*adjacent = vector<vector<int>>(6);*/
+	adjacent = vector<vector<int>>(6);
 
 	//인접리스트
-	/*adjacent[0].push_back(1);
+	adjacent[0].push_back(1);
 	adjacent[0].push_back(3);
 	adjacent[1].push_back(0);
 	adjacent[1].push_back(2);
 	adjacent[1].push_back(3);
 	adjacent[3].push_back(4);
-	adjacent[5].push_back(4);*/
+	adjacent[5].push_back(4);
 
 	//인접 행렬
-	adjacent = vector<vector<int>>
+	/*adjacent = vector<vector<int>>
 	{
 		{0, 1, 0, 1, 0, 0},
 		{1, 0, 1, 1, 0, 0},
@@ -41,66 +41,65 @@ void CreateGraph()
 		{0, 0, 0, 0, 1, 0},
 		{0, 0, 0, 0, 0, 0},
 		{0, 0, 0, 0, 1, 0},
-	
-	};
+
+	};*/
 }
 
-//DFS
-
-void Dfs(int here)
+void Bfs(int here)
 {
-	// 방문!
-	visited[here] = true;
-	cout << "Visited: " << here << endl;
+	//누구에 의해 발견 되었는지?
+	vector<int> parent(6, -1);
+	//시작점에서 얼만큼 떨어져 있는지?
+	vector<int> distance(6, -1);
 
-	//인접 리스트 version
-	// 모든 인접 정점을 순회
-	/*for (int i = 0; i < adjacent[here].size(); i++)
+
+	queue<int> q;
+	q.push(here);
+	discovered[here] = true;
+	parent[here] = here;
+	distance[here] = 0;
+
+	while (q.empty() == false)
 	{
-		int there = adjacent[here][i];
-		if (visited[there] == false)
-		{
-			Dfs(there);
-		}
-	}*/
+		here = q.front();
+		q.pop();
 
-	//인접 행렬 버전
-	//모든 인접 정점을 순회한다
-	for (int there = 0; there < 6; there++)
-	{
-		if (adjacent[here][here] == 0)
+		cout << "Visited : " << here << endl;
+
+		for (int there : adjacent[here])
 		{
-			continue;
+			if (discovered[there])
+			{
+				continue;
+			}
+			q.push(there);
+			discovered[there] = true;
+
+			parent[there] = here;
+			distance[there] = distance[here] + 1;
 		}
 
-		//아직 방문하지 않은 곳이 있으면 방문한다
-		if (visited[there] == false)
-		{
-			Dfs(there);
-		}
 	}
 }
 
-void DfsAll()
+void BfsAll()
 {
-	visited = vector<bool>(6, false);
-
 	for (int i = 0; i < 6; i++)
 	{
-		if (visited[i] == false)
+		if (discovered[i] == false)
 		{
-			Dfs(i);
+			Bfs(i);
 		}
-
 	}
 }
+
 
 int main()
 {
 	CreateGraph();
-	//visited = vector<bool>(6, false);
-	//Dfs(0);
+	
+	discovered = vector<bool>(6, false);
 
-	DfsAll();
+	Bfs(0);
 }
 
