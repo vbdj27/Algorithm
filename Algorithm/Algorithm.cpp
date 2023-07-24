@@ -9,85 +9,106 @@
 
 using namespace std;
 
-// 1) 버블 정렬 (Bubble Sort)
-void BubbleSort(vector<int>& v)
+//힙 정렬
+void HeapSort(vector<int>& v)
 {
-	const int n = (int)v.size();
+	priority_queue<int, vector<int>, greater<int>> pq;
 
-	for (int i = 0; i < n - 1; i++)
+	for(int num : v)
 	{
-		for (int j = 0; j < n - 1 - i; j++)
-		{
-			if (v[j] > v[j+1])
-			{
-				int temp = v[j];
-				v[j] = v[j+1];
-				v[j + 1] = temp;
-			}
-		}
-
+		pq.push(num);
 	}
-}
-// 2) 선택 정렬 (Selection Sort)
-void SelectionSort(vector<int>& v)
-{
-	const int n = (int)v.size();
 
-	for (int i = 0; i < n - 1; i++)
+	v.clear();
+
+	while (pq.empty() == false)
 	{
-		int bestIdx = i;
-
-		for (int j = i + 1; j < n; j++)
-		{
-			if (v[j < v[bestIdx]])
-			{
-				bestIdx = j;
-			}
-		}
-
-		//교환
-		int temp = v[i];
-		v[i] = v[bestIdx];
-		v[bestIdx] = temp;
+		v.push_back(pq.top());
+		pq.pop();
 	}
 }
 
-// 3) 삽입 정렬 (Insertion Sort)
-void InsertionSort(vector<int>& v)
+// 병합 정렬
+// 분할 정복 (Divide and Conquer)
+// - 분할 (Divide)	문제를 더 단순하게 분할한다.
+// - 정복 (Conquer)	분할된 문제를 해결한다.
+// - 결합 (Combine)	결과를 취합하여 마무리 한다.
+
+void MergeResult(vector<int>& v, int left, int mid, int right)
 {
-	const int n = (int)v.size();
+	int leftIdx = left;
+	int rightIdx = right;
 
-	for (int i = 1; i < n; i++)
+	vector<int> temp;
+
+	while (leftIdx <= mid && rightIdx <= right)
 	{
-		int insertData = v[i];
-
-		int j;
-
-		for (j = i - 1; j >= 0; j--)
+		if (v[leftIdx] <= v[rightIdx])
 		{
-			if (v[j] > insertData)
-			{
-				v[j + 1] = v[j];
-			}
-
-			else
-			{
-				break;
-			}
+			temp.push_back(v[leftIdx]);
+			leftIdx++;
 		}
 
-		v[j+1] = insertData;
+		else
+		{
+			temp.push_back(v[rightIdx]);
+			rightIdx++;
+		}
+	}
+
+	// 왼쪽이 먼저 끝났으면, 오른쪽 나머지 데이터 복사
+	if (leftIdx > mid)
+	{
+		while (rightIdx <= right)
+		{
+			temp.push_back(v[rightIdx]);
+			rightIdx++;
+		}
+	}
+
+	//오른쪽이 먼저 끝났으면, 왼쪽 나머지 데이터 복사
+	else
+	{
+		while (leftIdx <= mid)
+		{
+			temp.push_back(v[leftIdx]);
+			leftIdx++;
+		}
+	}
+
+	for (int i = 0; i < temp.size(); i++)
+	{
+		v[left + 1] = temp[i];
 	}
 }
+
+void MergeSort(vector<int>& v, int left, int right)
+{
+	if (left >= right)
+	{
+		return;
+	}
+
+	int mid = (left + right) / 2;
+	MergeSort(v, left, mid);
+	MergeSort(v, mid + 1, right);
+
+	MergeResult(v, left, mid, right);
+}
+
 
 int main()
 {
-	vector<int> v{1, 5, 3, 4, 2};
+	vector<int> v;
 
-	std::sort(v.begin(), v.end());
+	srand(time(0));
 
-	//BubbleSort(v);
-	//SelectionSort(v);
-	//InsertionSort(v);	
-}
+	for (int i = 0; i < 50; i++)
+	{
+		int randValue = rand() % 100;
+		v.push_back(randValue);
+	}
+
+	MergeSort(v, 0, v.size() -1);
+}	
 
