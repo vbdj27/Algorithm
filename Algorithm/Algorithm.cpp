@@ -9,104 +9,104 @@
 
 using namespace std;
 
-// Q) map vs hash_map (unordered_map)
+// 상호 배타적 집합 (Disjoint Set)
+// -> 유니온-파인드 Union-Find(합치기-찾기)
 
-// map: Red-Black Tree
-// - 추가/탐색/삭제 O(logN)
-
-// C# dictionary = C++ map (x)
-// C# dictionary = C++ unordered_map
-
-// hash_map(unordered_map)
-// -추가/탐색/삭제 O(1)
-
-//메모리를 내주고 속도를 취한다
-
-// '해시' '테이블'
-
-void TestTable()
+// 트리 구조를 이용한 상호 배타적 집합의 표현
+struct Node
 {
-	struct User
-	{
-		int userId = 0;
-		string username;
-	};
+	Node* leader;
+};
 
-	vector<User> users;
-	users.resize(1000);
-
-	//777번 유저 정보 세팅
-	users[777] = User{777, "Rookies"};
-
-	//777번 유저 이름은?
-	string name = users[777].username;
-	cout << name <<endl;
-
-	// 테이블
-	// 키를 알면, 데이터를 단번에 찾을 수 있다!
-}
-
-void TestHash()
+class NaiveDisjointSet
 {
-	struct User
+public:
+	NaiveDisjointSet(int n) : _parent(n)
 	{
-		int userId = 0;
-		string username;
-	};
-
-	vector<User>users;
-	users.resize(1000);
-
-	const int userId = 123456789;
-	int key = (userId % 1000); // hash <- 고유번호
-
-	//123456789 유저 정보 세팅
-	users[key] = User {userId, "Rookiss"};
-
-	User& user = users[key];
-	if (user.userId == userId)
-	{
-		string name = user.username;
-		cout << name <<endl;
-	}
-
-	// 충돌 문제
-	// 충돌이 발생한 자리를 대신해서 다른 빈자리를 찾아나서면 된다
-	// -선형 조사법 (linear probing)
-	// hash(key) +1 -> hash(key) +2
-	// -이차 조사법 (quadratic probing)
-	// hash(key) +1 ^2 -> hash(key) +2^2
-}
-
-// O(1)
-void TestHashTableChainig()
-{
-	struct User
-	{
-		int userId = 0;
-		string username;
-	};
-
-	vector<vector<User>>users;
-	users.resize(1000);
-
-	const int userId = 123456789;
-	int key = (userId % 1000); // hash <- 고유번호
-
-	//123456789 유저 정보 세팅
-	users[key].push_back (User{ userId, "Rookiss" });
-
-	// 123456789 유저 이름은?
-	vector<User>& bucket = users[key];
-	for(User& user : bucket)
-	{
-		if (user.userId == userId)
+		for (int i = 0; i < n; i++)
 		{
-			string name = user.username;
-			cout << name <<endl;
+			_parent[i] = i;
 		}
 	}
-}
+
+	int Find(int u)
+	{
+		if (u == _parent[u])
+		{
+			return u;
+		}
+
+		return Find(_parent[u]);
+	}
+
+	void Merge(int u, int v)
+	{
+		u = Find(u);
+		v = Find(v);
+
+		if (u == v)
+		{
+			return;
+		}
+
+		_parent[u] = v;
+	}
+
+private:
+	vector<int> _parent;
+};
+
+// 트리가 한쪽으로 기우는 문제를 해결 => 트리를 합칠 때, 항상 '높이가 낮은 트리를'
+// '높이가 높은 트리' 밑으로 => Union by Rank 랭크에 의한 합치기 최적화
+class DisjointSet
+{
+public:
+	DisjointSet(int n) : _parent(n), _rank(n, 1)
+	{
+		for (int i = 0; i < n; i++)
+		{
+			_parent[i] = i;
+		}
+	}
+
+	int Find(int u)
+	{
+		if (u == _parent[u])
+		{
+			return u;
+		}
+
+		return _parent[u]  = Find(_parent[u]);
+	}
+
+	void Merge(int u, int v)
+	{
+		u = Find(u);
+		v = Find(v);
+
+		if (u == v)
+		{
+			return;
+		}
+
+		if (_rank[u] > _rank[v])
+		{
+			swap(u, v);
+		}
+
+		// rank[u] <= rank[v] 보장됨
+		_parent[u] = v;
+
+		if (_rank[u] == _rank[v])
+		{
+			_rank[v]++;
+		}
+	}
+
+private:
+	vector<int> _parent;
+	vector<int> _rank;
+};
 
 int main()
 {
