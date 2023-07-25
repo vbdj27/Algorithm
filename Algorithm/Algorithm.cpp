@@ -9,55 +9,8 @@
 
 using namespace std;
 
-// 상호 배타적 집합 (Disjoint Set)
-// -> 유니온-파인드 Union-Find(합치기-찾기)
 
-// 트리 구조를 이용한 상호 배타적 집합의 표현
-struct Node
-{
-	Node* leader;
-};
 
-class NaiveDisjointSet
-{
-public:
-	NaiveDisjointSet(int n) : _parent(n)
-	{
-		for (int i = 0; i < n; i++)
-		{
-			_parent[i] = i;
-		}
-	}
-
-	int Find(int u)
-	{
-		if (u == _parent[u])
-		{
-			return u;
-		}
-
-		return Find(_parent[u]);
-	}
-
-	void Merge(int u, int v)
-	{
-		u = Find(u);
-		v = Find(v);
-
-		if (u == v)
-		{
-			return;
-		}
-
-		_parent[u] = v;
-	}
-
-private:
-	vector<int> _parent;
-};
-
-// 트리가 한쪽으로 기우는 문제를 해결 => 트리를 합칠 때, 항상 '높이가 낮은 트리를'
-// '높이가 높은 트리' 밑으로 => Union by Rank 랭크에 의한 합치기 최적화
 class DisjointSet
 {
 public:
@@ -108,8 +61,94 @@ private:
 	vector<int> _rank;
 };
 
+struct Vertex
+{
+
+};
+
+vector<Vertex> vertices;
+vector<vector<int>> adjacent; // 인접 행렬
+
+void CreateGraph()
+{
+	vertices.resize(6);
+	adjacent = vector<vector<int>>(6, vector<int>(6, -1));
+
+	adjacent[0][1] = adjacent[1][0] = 15;
+	adjacent[0][3] = adjacent[3][0] = 35;
+	adjacent[1][2] = adjacent[2][1] = 5;
+	adjacent[1][3] = adjacent[3][1] = 10;
+	adjacent[3][4] = adjacent[4][3] = 5;
+	adjacent[3][5] = adjacent[5][3] = 10;
+	adjacent[5][4] = adjacent[4][5] = 5;
+}
+
+struct CostEdge
+{
+	int cost;
+	int u;
+	int v;
+
+	bool operator<(CostEdge& other)
+	{
+		return cost <other.cost;
+	}
+};
+
+int Kruskal(vector<CostEdge>& selected)
+{
+	int ret = 0;
+
+	selected.clear();
+
+	vector<CostEdge> edges;
+
+	for (int u = 0; u < adjacent.size(); u++)
+	{
+		for (int v = 0; v < adjacent[u].size(); v++)
+		{
+			if (u > v)
+			{
+				continue;
+			}
+
+			int cost = adjacent[u][v];
+
+			if (cost == -1)
+			{
+				continue;
+			}
+
+			edges.push_back(CostEdge { cost, u, v });
+		}
+	}
+
+	std::sort(edges.begin(), edges.end());
+
+	DisjointSet sets(vertices.size());
+
+	for (CostEdge& edge : edges)
+	{
+		// 같은 그룹이면 스킵 (안 그러면 사이클 발생)
+		if (sets.Find(edge.u) == sets.Find(edge.v))
+		{
+			continue;
+		}
+
+		// 두 그룹을 합친다
+		sets.Merge(edge.u, edge.v);
+		selected.push_back(edge);
+		ret += edge.cost;
+	}
+
+	return ret;
+}
+
 int main()
 {
-	
+	CreateGraph();
+
+	vector<CostEdge> selected;
+	int cost = Kruskal(selected);
 }	
 
