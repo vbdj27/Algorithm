@@ -10,76 +10,160 @@
 
 using namespace std;
 
-// TRIANGLE_PATH
-// - (0,0)부터 시작해서 아래 or 아래우측으로 이동 가능
-// - 만나는 숫자를 모두 더함
-// - 더한 숫자가 최대가 되는 경로? 합?
+// TIC-TAE-TOE
 
-// 6
-// 1 2
-// 3 7 4
-// 9 4 1 7
-// 2 7 5 9 4
+vector <vector<char>> board;
+int cache[19683];
 
-int N;
-vector<vector<int>> board;
-vector<vector<int>> cache;
-vector<vector<int>> nextX;
+enum
+{	
+	DEFAULT =2,
+	WIN = 1,
+	DRAW = 0,
+	LOSE = -1
+};
 
-int path(int y, int x)
+int HashKey(const vector<vector<char>>& board)
 {
-	// 기저 사항
-	if (y == N)
+	int ret = 0;
+
+	for (int y = 0; y < 3; y++)
 	{
-		return 0;
+		for (int x = 0; x < 3; x++)
+		{
+			ret = ret * 3;
+
+			if (board[y][x] == 'o')
+			{
+				ret += 1;
+			}
+
+			else if (board[y][x] == 'x')
+			{
+				ret += 2;
+			}
+		}
+	}
+
+	return ret;
+}
+
+bool IsFinished(const vector<vector<char>>& board, char turn)
+{
+	// 좌우
+	for (int i = 0; i < 3; i++)
+	{
+		if (board[i][0] == turn && board[i][1] == turn && board[i][2] == turn)
+		{
+			return true;
+		}
+	}
+
+	// 상하
+	for (int i = 0; i < 3; i++)
+	{
+		if (board[0][i] == turn && board[1][i] == turn && board[2][i] == turn)
+		{
+			return true;
+		}
+	}
+
+	// 대각선
+	if (board[0][0] == turn && board[1][1] == turn && board[2][2] == turn)
+	{
+		return true;
+	}
+
+	if (board[0][2] == turn && board[1][1] == turn && board[2][0] == turn)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+int CanWin(vector <vector<char>>& board, char turn)
+{
+	// 기저 사례
+	if (IsFinished(board, 'o' + 'x' - turn))
+	{
+		return LOSE;
 	}
 
 	// 캐시 확인
-	int& ret = cache[y][x];
-	if (ret != -1)
+	int key = HashKey(board);
+	int& ret = cache[key];
+	
+	if(ret != DEFAULT)
 	{
 		return ret;
 	}
 
-	// 경로 기록
+	// 구현
+
+	int minValue = DEFAULT;
+
+	for (int y = 0; y < 3; y++)
 	{
-		int nextBottom = path(y + 1, x);
-		int nextBottomRight = path(y + 1, x + 1);
-
-		if (nextBottom > nextBottomRight)
+		for (int x = 0; x < 3; x++)
 		{
-			nextX[y][x] = x;
-		}
+			if (board[y][x] != '.')
+			{
+				continue;
+			}
 
-		else
-		{
-			nextX[y][x] = x + 1;
+			// 착수
+			board[y][x] = turn;
+
+			// 확인
+			minValue = min(minValue, CanWin(board, 'o' + 'x' - turn));
+
+			// 취소
+			board[y][x] = '.';
 		}
 	}
 
-	// 구현
-	/*board[y][x] + path(y + 1, x);
-	board[y][x] + path(y + 1, x + 1);*/
+	if (minValue == DRAW || minValue == DEFAULT)
+	{
+		return ret = DRAW;
+	}
 
-	return ret = board[y][x] + max(path(y + 1, x), path(y + 1, x + 1));
+	else
+	{
+		return ret = -minValue;
+	}
+
 }
 
 int main()
 {
-	board = vector<vector<int>>
+	board = vector<vector<char>>
 	{
-		{6},
-		{1, 2},
-		{3, 7, 4},
-		{9, 4, 1, 7},
-		{2, 7, 5, 9, 4}
+		{'.', '.', '.'},
+		{'.', '.', '.'},
+		{'.', '.', '.'}
 	};
 
-	N = board.size();
-	cache = vector<vector<int>>(N, vector<int>(N, -1));
+	for (int i = 0; i < 19683; i++)
+	{
+		cache[i] = DEFAULT;
+	}
 
-	int ret = path(0, 0);
+	int win = CanWin(board, 'o');
 
-	cout << ret <<endl;
+	switch (win)
+	{
+		case WIN:
+			cout << "Win" << endl;
+			break;
+					
+		case DRAW:
+			cout << "Draw" << endl;
+			break;
+
+		case LOSE:
+			cout <<"Lose" << endl;
+			break;
+	}
 }	
 
