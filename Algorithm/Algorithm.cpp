@@ -10,60 +10,76 @@
 
 using namespace std;
 
-// LIS (Longest Increasing Sequence)
+// TRIANGLE_PATH
+// - (0,0)부터 시작해서 아래 or 아래우측으로 이동 가능
+// - 만나는 숫자를 모두 더함
+// - 더한 숫자가 최대가 되는 경로? 합?
 
-// Seq : 1 9 2 5 7
-// 부분 수열 : 일부(0개 이상) 숫자를 지우고 남은 수열
-// ex) 1 2 5
-// ex) 1 9 5 7
-// 순 증가 부분 수열
-// ex) 1 2 5
+// 6
+// 1 2
+// 3 7 4
+// 9 4 1 7
+// 2 7 5 9 4
 
-// LIS : 제일 긴 [순 증가 부분 수열]의 길이
-// 1 2 5 7 길이 = 4
+int N;
+vector<vector<int>> board;
+vector<vector<int>> cache;
+vector<vector<int>> nextX;
 
-
-int cache[100];
-vector<int> seq;
-
-int Lis(int pos)
+int path(int y, int x)
 {
 	// 기저 사항
-	/*if (pos == seq.size() - 1)
+	if (y == N)
 	{
-		return 1;
-	}*/
+		return 0;
+	}
 
 	// 캐시 확인
-	int& ret = cache[pos];
+	int& ret = cache[y][x];
 	if (ret != -1)
 	{
 		return ret;
 	}
 
-	// 구현
-	ret = 1;
-
-	for (int next = pos + 1; next < seq.size(); next++)
+	// 경로 기록
 	{
-		if (seq[pos] < seq[next])
+		int nextBottom = path(y + 1, x);
+		int nextBottomRight = path(y + 1, x + 1);
+
+		if (nextBottom > nextBottomRight)
 		{
-			ret = max(ret, 1 + Lis(next));
+			nextX[y][x] = x;
+		}
+
+		else
+		{
+			nextX[y][x] = x + 1;
 		}
 	}
 
-	return ret;
+	// 구현
+	/*board[y][x] + path(y + 1, x);
+	board[y][x] + path(y + 1, x + 1);*/
+
+	return ret = board[y][x] + max(path(y + 1, x), path(y + 1, x + 1));
 }
 
 int main()
 {
-	::memset(cache, -1, sizeof(cache));
-	seq = vector<int>{10, 1, 9, 2, 5, 7};
-
-	int ret = 0;
-	for (int pos = 0; pos < seq.size(); pos++)
+	board = vector<vector<int>>
 	{
-		ret = max(ret, Lis(pos));
-	}
+		{6},
+		{1, 2},
+		{3, 7, 4},
+		{9, 4, 1, 7},
+		{2, 7, 5, 9, 4}
+	};
+
+	N = board.size();
+	cache = vector<vector<int>>(N, vector<int>(N, -1));
+
+	int ret = path(0, 0);
+
+	cout << ret <<endl;
 }	
 
